@@ -22130,7 +22130,8 @@ try {
   };
   (async () => {
     const project = await getProject();
-    console.log({ project });
+    if (!project)
+      throw new Error("Unable to find pages project");
     const githubBranch = import_process.env.GITHUB_REF_NAME;
     const productionEnvironment = githubBranch === project.production_branch;
     const environmentName = productionEnvironment ? "Production" : `Preview: (${githubBranch})`;

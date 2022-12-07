@@ -20,7 +20,7 @@ try {
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
       { headers: { Authorization: `Bearer ${apiToken}` } }
     );
-    const { result } = await response.json() as { result: Project };
+    const { result } = await response.json() as { result: Project | null };
     return result;
   }
   
@@ -94,7 +94,8 @@ const createGitHubDeployment = async (octokit: Octokit, productionEnvironment: b
 
   (async () => {
     const project = await getProject();
-console.log({ project });
+    if (!project) throw new Error('Unable to find pages project')
+
     const githubBranch = env.GITHUB_REF_NAME;
     const productionEnvironment = githubBranch === project.production_branch;
     const environmentName = productionEnvironment ? "Production" : `Preview: (${githubBranch})`;
