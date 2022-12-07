@@ -22136,7 +22136,7 @@ try {
     const productionEnvironment = githubBranch === project.production_branch;
     const environmentName = productionEnvironment ? "Production" : `Preview: (${githubBranch})`;
     let gitHubDeployment;
-    if (gitHubToken.trim().length > 0) {
+    if (gitHubToken && gitHubToken.length) {
       const octokit = (0, import_github.getOctokit)(gitHubToken);
       gitHubDeployment = await createGitHubDeployment(octokit, productionEnvironment, environmentName);
     }

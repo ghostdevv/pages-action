@@ -102,7 +102,7 @@ try {
 
     let gitHubDeployment: Awaited<ReturnType<typeof createGitHubDeployment>>;
 
-    if (gitHubToken.trim().length > 0) {
+    if (gitHubToken && gitHubToken.length) {
       const octokit = getOctokit(gitHubToken);
       gitHubDeployment = await createGitHubDeployment(octokit, productionEnvironment, environmentName);
     }
