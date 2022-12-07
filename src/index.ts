@@ -46,7 +46,7 @@ try {
     return deployment;
   };
 
-  const createGitHubDeployment = async (octokit: Octokit, productionEnvironment: boolean, environment: string) => {
+const createGitHubDeployment = async (octokit: Octokit, productionEnvironment: boolean, environment: string) => {
     const deployment = await octokit.rest.repos.createDeployment({
       owner: context.repo.owner,
       repo: context.repo.repo,
@@ -94,7 +94,7 @@ try {
 
   (async () => {
     const project = await getProject();
-
+console.log({ project });
     const githubBranch = env.GITHUB_REF_NAME;
     const productionEnvironment = githubBranch === project.production_branch;
     const environmentName = productionEnvironment ? "Production" : `Preview: (${githubBranch})`;
