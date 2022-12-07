@@ -46,7 +46,7 @@ try {
     return deployment;
   };
 
-const createGitHubDeployment = async (octokit: Octokit, productionEnvironment: boolean, environment: string) => {
+  const createGitHubDeployment = async (octokit: Octokit, productionEnvironment: boolean, environment: string) => {
     const deployment = await octokit.rest.repos.createDeployment({
       owner: context.repo.owner,
       repo: context.repo.repo,
