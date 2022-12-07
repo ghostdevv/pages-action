@@ -22067,7 +22067,6 @@ try {
   const directory = (0, import_core.getInput)("directory", { required: true });
   const gitHubToken = (0, import_core.getInput)("gitHubToken", { required: false });
   const branch = (0, import_core.getInput)("branch", { required: false });
-  const octokit = (0, import_github.getOctokit)(gitHubToken);
   const getProject = async () => {
     const response = await (0, import_undici.fetch)(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${projectName}`,
@@ -22094,7 +22093,7 @@ try {
     } = await response.json();
     return deployment;
   };
-  const createGitHubDeployment = async (productionEnvironment, environment) => {
+  const createGitHubDeployment = async (octokit, productionEnvironment, environment) => {
     const deployment = await octokit.rest.repos.createDeployment({
       owner: import_github.context.repo.owner,
       repo: import_github.context.repo.repo,
@@ -22114,7 +22113,8 @@ try {
     url,
     deploymentId,
     environmentName,
-    productionEnvironment
+    productionEnvironment,
+    octokit
   }) => {
     await octokit.rest.repos.createDeploymentStatus({
       owner: import_github.context.repo.owner,
@@ -22129,19 +22129,15 @@ try {
     });
   };
   (async () => {
-    if (gitHubToken === "") {
-      return;
-    }
     const project = await getProject();
     const githubBranch = import_process.env.GITHUB_REF_NAME;
     const productionEnvironment = githubBranch === project.production_branch;
-    let environmentName;
-    if (productionEnvironment) {
-      environmentName = "Production";
-    } else {
-      environmentName = `Preview (${githubBranch})`;
+    const environmentName = productionEnvironment ? "Production" : `Preview: (${githubBranch})`;
+    let gitHubDeployment;
+    if (gitHubToken.trim().length > 0) {
+      const octokit = (0, import_github.getOctokit)(gitHubToken);
+      gitHubDeployment = await createGitHubDeployment(octokit, productionEnvironment, environmentName);
     }
-    const gitHubDeployment = await createGitHubDeployment(productionEnvironment, environmentName);
     const pagesDeployment = await createPagesDeployment();
     (0, import_core.setOutput)("id", pagesDeployment.id);
     (0, import_core.setOutput)("url", pagesDeployment.url);
@@ -22152,12 +22148,14 @@ try {
     }
     (0, import_core.setOutput)("alias", alias);
     if (gitHubDeployment) {
+      const octokit = (0, import_github.getOctokit)(gitHubToken);
       await createGitHubDeploymentStatus({
         id: gitHubDeployment.id,
         url: pagesDeployment.url,
         deploymentId: pagesDeployment.id,
         environmentName,
-        productionEnvironment
+        productionEnvironment,
+        octokit
       });
     }
   })();
